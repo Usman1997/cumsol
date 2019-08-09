@@ -13,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.AnimationDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -62,17 +63,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int CAMERA_REQUEST = 1888;
     private ImageView imageView;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
-    LinearLayout llform;
+    LinearLayout llform,main_activity_container;
     RelativeLayout llDataSet;
     TextView tvProject, tvSite, tvOperator, tvSubcon, tvLat, tvlong, tvRemarks, tvAddress,tvDateAndTime;
     Bitmap photo;
+    private AnimationDrawable animationDrawable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-        initView();
+        initializeBackground();
+        SharedPrefManager.getInstance(this).clearData();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         subcon.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -83,11 +86,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    private void initializeBackground() {
+        animationDrawable = (AnimationDrawable) main_activity_container.getBackground();
+        animationDrawable.setEnterFadeDuration(10);
+        animationDrawable.setExitFadeDuration(4000);
+        animationDrawable.start();
+    }
+
     /**
      * Intialize Views
      */
 
     private void initView() {
+        main_activity_container = (LinearLayout)findViewById(R.id.main_activity_container);
         llform = (LinearLayout) findViewById(R.id.llform);
         llDataSet = (RelativeLayout) findViewById(R.id.llDataSet);
         frameView = (FrameLayout) findViewById(R.id.frameView);
@@ -283,10 +294,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void storeData() {
-        SharedPrefManager.getInstance(this).storeProject(project.getText().toString());
-        SharedPrefManager.getInstance(this).storeOperator(operator.getText().toString());
-        SharedPrefManager.getInstance(this).storeSite(site.getText().toString());
-        SharedPrefManager.getInstance(this).storeSubCon(subcon.getText().toString());
+        if(project.getText().length()>0){
+            SharedPrefManager.getInstance(this).storeProject(project.getText().toString());
+        }
+        if(operator.getText().length()>0){
+            SharedPrefManager.getInstance(this).storeOperator(operator.getText().toString());
+        }
+
+        if(site.getText().length()>0){
+            SharedPrefManager.getInstance(this).storeSite(site.getText().toString());
+        }
+
+        if(subcon.getText().length()>0){
+            SharedPrefManager.getInstance(this).storeSubCon(subcon.getText().toString());
+        }
     }
 
     private void savePicture() {
@@ -409,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tvSubcon.setVisibility(View.GONE);
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         sdf.setTimeZone(TimeZone.getDefault());
         String currentDateandTime = sdf.format(new Date());
         tvDateAndTime.setText("Date & Time : "+ currentDateandTime);

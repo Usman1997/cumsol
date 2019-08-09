@@ -2,11 +2,21 @@
     android:id="@+id/main_activity_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/dark_purple_background_animation"
     android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="@dimen/activity_vertical_margin">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="ComSol"
+        android:textColor="@color/white_color"
+        android:textSize="18dp"
+        android:textStyle="bold"/>
 
     <LinearLayout
         android:id="@+id/llform"
@@ -19,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Project"
-            android:textColor="@color/gray_color"
+            android:textColor="@color/white_color"
             android:textSize="12dp" />
 
         <EditText
@@ -33,8 +43,8 @@
             android:maxLength="20"
             android:singleLine="true"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/dark_gradient_color_1"
-            android:textColorHint="@color/gray_color"
+            android:textColor="@color/white_color"
+            android:textColorHint="@color/white_color"
             android:textCursorDrawable="@null"
             android:textSize="12dp" />
 
@@ -44,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:text="Site"
-            android:textColor="@color/gray_color"
+            android:textColor="@color/white_color"
             android:textSize="12dp" />
 
         <EditText
@@ -58,8 +68,8 @@
             android:maxLength="20"
             android:singleLine="true"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/dark_gradient_color_1"
-            android:textColorHint="@color/gray_color"
+            android:textColor="@color/white_color"
+            android:textColorHint="@color/white_color"
             android:textCursorDrawable="@null"
             android:textSize="12dp" />
 
@@ -69,7 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:text="Operator"
-            android:textColor="@color/gray_color"
+            android:textColor="@color/white_color"
             android:textSize="12dp" />
 
         <EditText
@@ -83,8 +93,8 @@
             android:maxLength="20"
             android:singleLine="true"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/dark_gradient_color_1"
-            android:textColorHint="@color/gray_color"
+            android:textColor="@color/white_color"
+            android:textColorHint="@color/white_color"
             android:textCursorDrawable="@null"
             android:textSize="12dp" />
 
@@ -94,7 +104,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:text="Subcon"
-            android:textColor="@color/gray_color"
+            android:textColor="@color/white_color"
             android:textSize="12dp" />
 
         <EditText
@@ -108,8 +118,8 @@
             android:maxLength="20"
             android:singleLine="true"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/dark_gradient_color_1"
-            android:textColorHint="@color/gray_color"
+            android:textColor="@color/white_color"
+            android:textColorHint="@color/white_color"
             android:textCursorDrawable="@null"
             android:textSize="12dp" />
 
@@ -118,25 +128,27 @@
 
     <FrameLayout
         android:id="@+id/frameView"
-        android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp">
 
         <ImageView
-            android:visibility="visible"
             android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:scaleType="centerCrop"
-             />
+            android:visibility="visible" />
+
         <RelativeLayout
-            android:visibility="gone"
             android:id="@+id/llDataSet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -164,9 +176,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
                 android:background="#4D000000"
                 android:orientation="vertical"
-                android:layout_alignParentBottom="true"
                 android:padding="10dp">
 
                 <TextView
@@ -229,9 +241,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/colorPrimary"
+        android:background="@drawable/drawable_edit_text"
         android:gravity="center"
         android:text="Capture Picture"
         android:textColor="@color/white_color"
-        android:visibility="visible" />
+        android:visibility="visible"
+        android:layout_marginBottom="10dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Powered By ComSol"
+        android:textStyle="italic"
+        android:textColor="@color/white_color"
+        android:layout_gravity="center_horizontal"
+        android:textSize="12sp"/>
 </LinearLayout>

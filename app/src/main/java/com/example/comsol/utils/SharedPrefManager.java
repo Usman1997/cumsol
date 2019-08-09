@@ -1,5 +1,7 @@
 package com.example.comsol.utils;
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 
 /**
  * By Usman Siddiqui
@@ -118,5 +120,23 @@ public class SharedPrefManager {
     public String getOperator(){
         android.content.SharedPreferences sharedPreferences = context.getSharedPreferences(KEY_PREF,Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_OPERATOR,null);
+    }
+
+    public void clearData(){
+       removePreference(KEY_PREF,KEY_ADDRESS);
+       removePreference(KEY_PREF,KEY_PROJECT);
+       removePreference(KEY_PREF,KEY_SITE);
+       removePreference(KEY_PREF,KEY_OPERATOR);
+       removePreference(KEY_PREF,KEY_SUBCON);
+    }
+
+
+    protected void removePreference(String prefsName,
+                                    String key) {
+        SharedPreferences preferences = context.getSharedPreferences(prefsName,
+                Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove(key);
+        editor.commit();
     }
 }
