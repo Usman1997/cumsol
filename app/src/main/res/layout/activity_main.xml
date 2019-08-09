@@ -117,13 +117,10 @@
 
 
     <FrameLayout
-        android:id="@+id/viewtotakess"
+        android:id="@+id/frameView"
         android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-
-
 
         <ImageView
             android:visibility="visible"
@@ -133,72 +130,97 @@
             android:layout_weight="1"
             android:scaleType="centerCrop"
              />
-        <LinearLayout
+        <RelativeLayout
             android:visibility="gone"
             android:id="@+id/llDataSet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
             android:layout_margin="10dp"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvProject"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Project"
-                android:textColor="@android:color/holo_red_dark" />
+                android:background="#4D000000"
+                android:orientation="vertical"
+                android:padding="10dp">
 
-            <TextView
-                android:id="@+id/tvSite"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/tvLat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/latitude_label"
+                    android:textColor="@color/white_color" />
+
+                <TextView
+                    android:id="@+id/tvlong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/longitude_label"
+                    android:textColor="@color/white_color" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Site"
-                android:textColor="@android:color/holo_red_dark" />
+                android:background="#4D000000"
+                android:orientation="vertical"
+                android:layout_alignParentBottom="true"
+                android:padding="10dp">
 
-            <TextView
-                android:id="@+id/tvOperator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Operator"
-                android:textColor="@android:color/holo_red_dark" />
+                <TextView
+                    android:id="@+id/tvProject"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Project"
+                    android:textColor="@color/white_color" />
 
-            <TextView
-                android:id="@+id/tvSubcon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="SubCon"
-                android:textColor="@android:color/holo_red_dark" />
+                <TextView
+                    android:id="@+id/tvSite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Site"
+                    android:textColor="@color/white_color" />
 
-            <TextView
-                android:id="@+id/tvAddress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Address"
-                android:textColor="@android:color/holo_red_dark" />
+                <TextView
+                    android:id="@+id/tvOperator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Operator"
+                    android:textColor="@color/white_color" />
 
-            <TextView
-                android:id="@+id/tvLat"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/latitude_label"
-                android:textColor="@android:color/holo_red_dark" />
+                <TextView
+                    android:id="@+id/tvSubcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SubCon"
+                    android:textColor="@color/white_color" />
 
-            <TextView
-                android:id="@+id/tvlong"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/longitude_label"
-                android:textColor="@android:color/holo_red_dark" />
+                <TextView
+                    android:id="@+id/tvAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Address"
+                    android:textColor="@color/white_color" />
 
-            <TextView
-                android:id="@+id/tvRemarks"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Remarks"
-                android:textColor="@android:color/holo_red_dark" />
+                <TextView
+                    android:id="@+id/tvDateAndTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white_color" />
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tvRemarks"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Remarks"
+                    android:textColor="@color/white_color" />
+
+
+            </LinearLayout>
+
+        </RelativeLayout>
     </FrameLayout>
 
 
@@ -212,18 +234,4 @@
         android:text="Capture Picture"
         android:textColor="@color/white_color"
         android:visibility="visible" />
-
-
-    <Button
-        android:id="@+id/savepicture"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/colorPrimary"
-        android:gravity="center"
-        android:text="Reset"
-        android:textColor="@color/white_color"
-        android:visibility="gone" />
-
-
 </LinearLayout>

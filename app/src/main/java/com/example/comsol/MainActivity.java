@@ -11,7 +11,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Address;
@@ -21,38 +20,36 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.ResultReceiver;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.comsol.utils.Constants;
 import com.example.comsol.utils.SharedPrefManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -60,28 +57,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
     EditText project, operator, subcon, site;
-    Button openCameraBtn, savepicture;
-    FrameLayout viewtotakess;
+    Button openCameraBtn;
+    FrameLayout frameView;
     private static final int CAMERA_REQUEST = 1888;
     private ImageView imageView;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
-    LinearLayout llform, llDataSet;
-    TextView tvProject, tvSite, tvOperator, tvSubcon, tvLat, tvlong, tvRemarks,tvAddress;
+    LinearLayout llform;
+    RelativeLayout llDataSet;
+    TextView tvProject, tvSite, tvOperator, tvSubcon, tvLat, tvlong, tvRemarks, tvAddress,tvDateAndTime;
+    Bitmap photo;
 
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //No field is required
+        initView();
+        initView();
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        subcon.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                hideSoftKeyboards(MainActivity.this);
+                return true;
+            }
+        });
+    }
+
+    /**
+     * Intialize Views
+     */
+
+    private void initView() {
         llform = (LinearLayout) findViewById(R.id.llform);
-        llDataSet = (LinearLayout) findViewById(R.id.llDataSet);
-        viewtotakess = (FrameLayout) findViewById(R.id.viewtotakess);
+        llDataSet = (RelativeLayout) findViewById(R.id.llDataSet);
+        frameView = (FrameLayout) findViewById(R.id.frameView);
         project = (EditText) findViewById(R.id.project);
         site = (EditText) findViewById(R.id.site);
         operator = (EditText) findViewById(R.id.operator);
         subcon = (EditText) findViewById(R.id.subcon);
-
         tvProject = (TextView) findViewById(R.id.tvProject);
         tvSite = (TextView) findViewById(R.id.tvSite);
         tvOperator = (TextView) findViewById(R.id.tvOperator);
@@ -89,39 +102,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvLat = (TextView) findViewById(R.id.tvLat);
         tvlong = (TextView) findViewById(R.id.tvlong);
         tvRemarks = (TextView) findViewById(R.id.tvRemarks);
+        tvDateAndTime = (TextView)findViewById(R.id.tvDateAndTime);
         tvAddress = (TextView) findViewById(R.id.tvAddress);
-
-
         imageView = (ImageView) findViewById(R.id.imageView);
         openCameraBtn = (Button) findViewById(R.id.openCameraBtn);
-        savepicture = (Button) findViewById(R.id.savepicture);
         openCameraBtn.setOnClickListener(this);
-        savepicture.setOnClickListener(this);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
     }
-    String[] PERMISSIONS= {
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CONTROL_LOCATION_UPDATES,
-                android.Manifest.permission.CAMERA,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
+
+    /**
+     * Permissions
+     */
+
+    String[] PERMISSIONS = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.CONTROL_LOCATION_UPDATES,
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
     };
+
     @Override
     public void onStart() {
         super.onStart();
-
         int PERMISSION_ALL = 5;
-
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-
-
+        ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         if (!checkPermissions()) {
             requestPermissions();
         } else {
             getLastLocation();
         }
     }
+
+    /**
+     * Method to get Location of User
+     */
 
     @SuppressLint("MissingPermission")
     private void getLastLocation() {
@@ -230,11 +244,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     * Method that return address by latitude and longitude
+     *
+     * @param latitude
+     * @param longitude
+     * @throws IOException
+     */
+
     private void getAddress(double latitude, double longitude) throws IOException {
         Geocoder geocoder;
         List<Address> addresses;
         geocoder = new Geocoder(this, Locale.getDefault());
-
         addresses = geocoder.getFromLocation(latitude, longitude, 1);
         if (addresses.size() > 0) {
             String address = addresses.get(0).getAddressLine(0);
@@ -249,156 +270,86 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.openCameraBtn:
-                if(validate()){
-
-                    if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                         requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
+                        storeData();
                     } else {
                         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                         startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                        storeData();
                     }
-
-                }
-
-
-
-
-            case R.id.savepicture:
-                tvLat.setText("");
-                tvlong.setText("");
-                tvAddress.setText("");
-                project.setText("");
-                site.setText("");
-                operator.setText("");
-                subcon.setText("");
-
-                openCameraBtn.setVisibility(View.VISIBLE);
-                llform.setVisibility(View.VISIBLE);
-
-                savepicture.setVisibility(View.GONE);
-                llDataSet.setVisibility(View.GONE);
-                imageView.setImageBitmap(null);
-
-                //savePicture();
                 break;
         }
     }
 
-
-    public  boolean validate(){
-        if (project.getText().toString().trim().length() == 0) {
-            Toast.makeText(this, "Please enter project name", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (site.getText().toString().trim().length() == 0) {
-            Toast.makeText(this, "Please enter site name", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (operator.getText().toString().trim().length() == 0) {
-            Toast.makeText(this, "Please enter operator name", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (subcon.getText().toString().trim().length() == 0) {
-            Toast.makeText(this, "Please enter Sub contractor name", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        return  true;
-
+    private void storeData() {
+        SharedPrefManager.getInstance(this).storeProject(project.getText().toString());
+        SharedPrefManager.getInstance(this).storeOperator(operator.getText().toString());
+        SharedPrefManager.getInstance(this).storeSite(site.getText().toString());
+        SharedPrefManager.getInstance(this).storeSubCon(subcon.getText().toString());
     }
+
     private void savePicture() {
-
         if (isWriteStoragePermissionGranted()) {
-
-            takepic(viewtotakess);
-
+            capturePicture(frameView);
         }
     }
 
-    Bitmap photo;
 
+    /**
+     * After Capturing the picture
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
             llform.setVisibility(View.GONE);
-            openCameraBtn.setVisibility(View.GONE);
-            savepicture.setVisibility(View.VISIBLE);
             llDataSet.setVisibility(View.VISIBLE);
             photo = (Bitmap) data.getExtras().get("data");
             imageView.setImageBitmap(photo);
             imageView.setDrawingCacheEnabled(true);
-
-            showpopup();
-
-
+            showPopUp();
         }
     }
 
-    void takepic(View v1) {
+    /**
+     * Method to capture Picture
+     * @param view
+     */
 
+    void capturePicture(View view) {
         try {
             Date now = new Date();
             android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
-
             // image naming and path  to include sd card  appending name you choose for file
-
             String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".png";
-
-
             // create bitmap screen capture
-            //View v1 = getWindow().getDecorView().getRootView();
-            v1.setDrawingCacheEnabled(true);
-            Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-            v1.setDrawingCacheEnabled(true);
-
+            //View view = getWindow().getDecorView().getRootView();
+            view.setDrawingCacheEnabled(true);
+            Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+            view.setDrawingCacheEnabled(true);
             File imageFile = new File(mPath);
-
             FileOutputStream outputStream = new FileOutputStream(imageFile);
             int quality = 100;
             bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream);
             outputStream.flush();
             outputStream.close();
             Toast.makeText(this, "Successfully Saved", Toast.LENGTH_SHORT).show();
-
-            galleryAddPic(mPath);
+            saveBitmapToGallery(mPath);
             // openScreenshot(imageFile);
-
         } catch (Throwable e) {
             // Several error may come out with file handling or DOM
             e.printStackTrace();
         }
-
     }
-    private void galleryAddPic(String mCurrentPhotoPath) {
+
+    private void saveBitmapToGallery(String mCurrentPhotoPath) {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = new File(mCurrentPhotoPath);
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         this.sendBroadcast(mediaScanIntent);
-    }
-    private void openScreenshot(File imageFile) {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        Uri uri = Uri.fromFile(imageFile);
-        intent.setDataAndType(uri, "image/*");
-        startActivity(intent);
-        Toast.makeText(this, "Save Successfully", Toast.LENGTH_SHORT).show();
-    }
-
-    public boolean isReadStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG, "Permission is granted1");
-                return true;
-            } else {
-
-                Log.v(TAG, "Permission is revoked1");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 3);
-                return false;
-            }
-        } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(TAG, "Permission is granted1");
-            return true;
-        }
     }
 
     public boolean isWriteStoragePermissionGranted() {
@@ -419,24 +370,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void showpopup() {
-        tvLat.setText("Latitude "+SharedPrefManager.getInstance(this).getLat());
-        tvlong.setText("Longitude "+SharedPrefManager.getInstance(this).getLong());
-        tvAddress.setText("Address "+SharedPrefManager.getInstance(this).getAddress());
-        tvProject.setText("Project name "+project.getText().toString());
-        tvSite.setText("Site "+site.getText().toString());
-        tvOperator.setText("Operator "+operator.getText().toString());
-        tvSubcon.setText("Sub Contractor "+subcon.getText().toString());
+
+    private void setDataOnPicture() {
+        if(SharedPrefManager.getInstance(this).getLat()!=0){
+            tvLat.setText("Latitude " + SharedPrefManager.getInstance(this).getLat());
+        }else{
+            tvLat.setVisibility(View.GONE);
+        }
+        if(SharedPrefManager.getInstance(this).getLong()!=0){
+            tvlong.setText("Latitude " + SharedPrefManager.getInstance(this).getLong());
+        }else{
+            tvlong.setVisibility(View.GONE);
+        }
+        if(SharedPrefManager.getInstance(this).getAddress()!=null){
+            tvAddress.setText("Address: " + SharedPrefManager.getInstance(this).getAddress());
+        }else{
+            tvAddress.setVisibility(View.GONE);
+        }
+        if(SharedPrefManager.getInstance(this).getProject()!=null){
+            tvProject.setText("Project: " + SharedPrefManager.getInstance(this).getProject());
+        }else{
+            tvProject.setVisibility(View.GONE);
+        }
+        if(SharedPrefManager.getInstance(this).getSite()!=null){
+            tvSite.setText("Site: " + SharedPrefManager.getInstance(this).getSite());
+        }else{
+            tvSite.setVisibility(View.GONE);
+        }
+        if(SharedPrefManager.getInstance(this).getOperator()!=null){
+            tvOperator.setText("Operator: " + SharedPrefManager.getInstance(this).getOperator());
+        }else{
+            tvOperator.setVisibility(View.GONE);
+        }
+
+        if(SharedPrefManager.getInstance(this).getSubCon()!=null){
+            tvSubcon.setText("SubCon: " + SharedPrefManager.getInstance(this).getSubCon());
+        }else{
+            tvSubcon.setVisibility(View.GONE);
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        sdf.setTimeZone(TimeZone.getDefault());
+        String currentDateandTime = sdf.format(new Date());
+        tvDateAndTime.setText("Date & Time : "+ currentDateandTime);
+    }
+
+    public void showPopUp() {
+        setDataOnPicture();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add Remarks");
-
-// Set up the input
         final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
-
-// Set up the buttons
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -452,8 +437,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 dialog.cancel();
             }
         });
-
         builder.show();
+    }
 
+    public static void hideSoftKeyboards(MainActivity activity) {
+        if (activity.getCurrentFocus() != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(activity.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
+        }
     }
 }
