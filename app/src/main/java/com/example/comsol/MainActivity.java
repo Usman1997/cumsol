@@ -18,6 +18,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.provider.MediaStore;
@@ -26,7 +27,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +44,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,25 +56,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
-    EditText project,operator,subcon,site;
-    Button openCameraBtn;
-
+    EditText project, operator, subcon, site;
+    Button openCameraBtn,savepicture;
+    FrameLayout viewtotakess;
     private static final int CAMERA_REQUEST = 1888;
     private ImageView imageView;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
-
+    LinearLayout llform,llDataSet;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //No field is required
-        project = (EditText)findViewById(R.id.project);
-        site = (EditText)findViewById(R.id.site);
-        operator = (EditText)findViewById(R.id.operator);
-        subcon = (EditText)findViewById(R.id.subcon);
-        imageView = (ImageView)findViewById(R.id.imageView);
+        llform = (LinearLayout) findViewById(R.id.llform);
+        llDataSet = (LinearLayout) findViewById(R.id.llDataSet);
+        viewtotakess = (FrameLayout) findViewById(R.id.viewtotakess);
+        project = (EditText) findViewById(R.id.project);
+        site = (EditText) findViewById(R.id.site);
+        operator = (EditText) findViewById(R.id.operator);
+        subcon = (EditText) findViewById(R.id.subcon);
+        imageView = (ImageView) findViewById(R.id.imageView);
         openCameraBtn = (Button) findViewById(R.id.openCameraBtn);
+        savepicture = (Button) findViewById(R.id.savepicture);
         openCameraBtn.setOnClickListener(this);
+        savepicture.setOnClickListener(this);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
     }
@@ -93,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (task.isSuccessful() && task.getResult() != null) {
                             mLastLocation = task.getResult();
                             try {
-                                getAddress(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+                                getAddress(mLastLocation.getLatitude(), mLastLocation.getLongitude());
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -180,9 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
             }
-        }
-
-       else if (requestCode == MY_CAMERA_PERMISSION_CODE) {
+        } else if (requestCode == MY_CAMERA_PERMISSION_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "camera permission granted", Toast.LENGTH_LONG).show();
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -193,13 +202,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void getAddress(double latitude,double longitude) throws IOException {
+    private void getAddress(double latitude, double longitude) throws IOException {
         Geocoder geocoder;
         List<Address> addresses;
         geocoder = new Geocoder(this, Locale.getDefault());
 
         addresses = geocoder.getFromLocation(latitude, longitude, 1);
-        if(addresses.size()>0){
+        if (addresses.size() > 0) {
             String address = addresses.get(0).getAddressLine(0);
             SharedPrefManager.getInstance(MainActivity.this).storeAddress(address);
             SharedPrefManager.getInstance(MainActivity.this).storeLatitude(latitude);
@@ -210,29 +219,81 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.openCameraBtn:
-                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
-                {
+                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                     requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
-                }
-                else
-                {
+                } else {
                     Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(cameraIntent, CAMERA_REQUEST);
-                } ;
+                };
+
+
+            case R.id.savepicture:
+                savePicture();
                 break;
         }
     }
 
+    private void savePicture() {
 
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-        {
-            if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK)
-            { Bitmap photo = (Bitmap) data.getExtras().get("data");
-                imageView.setImageBitmap(photo);
-            }
+        takepic(viewtotakess);
+    }
+
+    Bitmap photo;
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+            llform.setVisibility(View.GONE);
+            openCameraBtn.setVisibility(View.GONE);
+            savepicture.setVisibility(View.VISIBLE);
+            llDataSet.setVisibility(View.VISIBLE);
+             photo = (Bitmap) data.getExtras().get("data");
+            imageView.setImageBitmap(photo);
+            imageView.setDrawingCacheEnabled(true);
+
+
+
+        }
+    }
+
+    void takepic(View v1) {
+
+        try {
+            Date now = new Date();
+            android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+            // image naming and path  to include sd card  appending name you choose for file
+            String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+
+            // create bitmap screen capture
+            //View v1 = getWindow().getDecorView().getRootView();
+            v1.setDrawingCacheEnabled(true);
+          Bitmap  bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+            v1.setDrawingCacheEnabled(false);
+
+            File imageFile = new File(mPath);
+
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            int quality = 100;
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+            outputStream.flush();
+            outputStream.close();
+
+            openScreenshot(imageFile);
+        } catch (Throwable e) {
+            // Several error may come out with file handling or DOM
+            e.printStackTrace();
         }
 
+    }
+
+    private void openScreenshot(File imageFile) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        Uri uri = Uri.fromFile(imageFile);
+        intent.setDataAndType(uri, "image/*");
+        startActivity(intent);
+        Toast.makeText(this, "Save Successfully", Toast.LENGTH_SHORT).show();
+    }
 }
