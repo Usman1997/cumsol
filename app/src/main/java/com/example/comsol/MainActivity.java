@@ -100,10 +100,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
     }
-
+    String[] PERMISSIONS= {
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CONTROL_LOCATION_UPDATES,
+                android.Manifest.permission.CAMERA,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+    };
     @Override
     public void onStart() {
         super.onStart();
+
+        int PERMISSION_ALL = 5;
+
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
+
 
         if (!checkPermissions()) {
             requestPermissions();
