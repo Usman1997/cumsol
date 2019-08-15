@@ -148,12 +148,12 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#4D000000"
+                android:background="#26000000"
                 android:orientation="vertical"
                 android:padding="10dp">
 
@@ -162,14 +162,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/latitude_label"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"/>
 
                 <TextView
                     android:id="@+id/tvlong"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/longitude_label"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"/>
 
             </LinearLayout>
 
@@ -177,7 +179,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:background="#4D000000"
+                android:background="#26000000"
                 android:orientation="vertical"
                 android:padding="10dp">
 
@@ -186,48 +188,57 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Project"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"/>
 
                 <TextView
                     android:id="@+id/tvSite"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Site"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp" />
 
                 <TextView
                     android:id="@+id/tvOperator"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Operator"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"/>
 
                 <TextView
                     android:id="@+id/tvSubcon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="SubCon"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"/>
 
                 <TextView
                     android:id="@+id/tvAddress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Address"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"/>
 
                 <TextView
                     android:id="@+id/tvDateAndTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/white_color" />
+                    android:text="Date and Time"
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"/>
 
                 <TextView
                     android:id="@+id/tvRemarks"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Remarks"
-                    android:textColor="@color/white_color" />
+                    android:textColor="@color/white_color"
+                    android:textSize="10dp"
+                    />
 
 
             </LinearLayout>

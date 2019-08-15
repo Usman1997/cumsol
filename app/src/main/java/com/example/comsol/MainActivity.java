@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -21,6 +22,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
@@ -63,11 +66,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int CAMERA_REQUEST = 1888;
     private ImageView imageView;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
-    LinearLayout llform,main_activity_container;
+    LinearLayout llform, main_activity_container;
     RelativeLayout llDataSet;
-    TextView tvProject, tvSite, tvOperator, tvSubcon, tvLat, tvlong, tvRemarks, tvAddress,tvDateAndTime;
+    TextView tvProject, tvSite, tvOperator, tvSubcon, tvLat, tvlong, tvRemarks, tvAddress, tvDateAndTime;
     Bitmap photo;
     private AnimationDrawable animationDrawable;
+    public static final String SIGNATURE_PHOTOS_DIRECTORY_NAME = "Cusmsol";
+    String mCurrentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
 
     private void initView() {
-        main_activity_container = (LinearLayout)findViewById(R.id.main_activity_container);
+        main_activity_container = (LinearLayout) findViewById(R.id.main_activity_container);
         llform = (LinearLayout) findViewById(R.id.llform);
         llDataSet = (RelativeLayout) findViewById(R.id.llDataSet);
         frameView = (FrameLayout) findViewById(R.id.frameView);
@@ -113,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvLat = (TextView) findViewById(R.id.tvLat);
         tvlong = (TextView) findViewById(R.id.tvlong);
         tvRemarks = (TextView) findViewById(R.id.tvRemarks);
-        tvDateAndTime = (TextView)findViewById(R.id.tvDateAndTime);
+        tvDateAndTime = (TextView) findViewById(R.id.tvDateAndTime);
         tvAddress = (TextView) findViewById(R.id.tvAddress);
         imageView = (ImageView) findViewById(R.id.imageView);
         openCameraBtn = (Button) findViewById(R.id.openCameraBtn);
@@ -282,30 +287,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             case R.id.openCameraBtn:
                 if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
-                        storeData();
-                    } else {
-                        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(cameraIntent, CAMERA_REQUEST);
-                        storeData();
-                    }
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
+                    storeData();
+                } else {
+                    dispatchTakePictureIntent();
+                    storeData();
+                }
                 break;
         }
     }
 
     private void storeData() {
-        if(project.getText().length()>0){
+        if (project.getText().length() > 0) {
             SharedPrefManager.getInstance(this).storeProject(project.getText().toString());
         }
-        if(operator.getText().length()>0){
+        if (operator.getText().length() > 0) {
             SharedPrefManager.getInstance(this).storeOperator(operator.getText().toString());
         }
 
-        if(site.getText().length()>0){
+        if (site.getText().length() > 0) {
             SharedPrefManager.getInstance(this).storeSite(site.getText().toString());
         }
 
-        if(subcon.getText().length()>0){
+        if (subcon.getText().length() > 0) {
             SharedPrefManager.getInstance(this).storeSubCon(subcon.getText().toString());
         }
     }
@@ -319,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * After Capturing the picture
+     *
      * @param requestCode
      * @param resultCode
      * @param data
@@ -327,15 +332,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
             llform.setVisibility(View.GONE);
             llDataSet.setVisibility(View.VISIBLE);
-            photo = (Bitmap) data.getExtras().get("data");
+            HelperUtils helperUtils = new HelperUtils(this);
+            photo = helperUtils.getCompressedBitmapOptimized(mCurrentPhotoPath);
             imageView.setImageBitmap(photo);
             imageView.setDrawingCacheEnabled(true);
             showPopUp();
+
         }
     }
 
     /**
      * Method to capture Picture
+     *
      * @param view
      */
 
@@ -366,11 +374,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void saveBitmapToGallery(String mCurrentPhotoPath) {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(mCurrentPhotoPath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
+        HelperUtils helperUtils = new HelperUtils(this);
+        Bitmap bitmapCompressed = helperUtils.getCompressedBitmapOptimized(mCurrentPhotoPath);
+        if (bitmapCompressed != null) {
+            String filePath = HelperUtils.getTodaysDate() + "_" + HelperUtils.getCurrentTime() + "_" + Math.random();
+            String newPath = helperUtils.savePhoto(bitmapCompressed, SIGNATURE_PHOTOS_DIRECTORY_NAME, filePath);
+            bitmapCompressed.recycle();
+        }
+
+
     }
 
     public boolean isWriteStoragePermissionGranted() {
@@ -393,47 +405,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void setDataOnPicture() {
-        if(SharedPrefManager.getInstance(this).getLat()!=0){
+        if (SharedPrefManager.getInstance(this).getLat() != 0) {
             tvLat.setText("Latitude " + SharedPrefManager.getInstance(this).getLat());
-        }else{
+        } else {
             tvLat.setVisibility(View.GONE);
         }
-        if(SharedPrefManager.getInstance(this).getLong()!=0){
+        if (SharedPrefManager.getInstance(this).getLong() != 0) {
             tvlong.setText("Latitude " + SharedPrefManager.getInstance(this).getLong());
-        }else{
+        } else {
             tvlong.setVisibility(View.GONE);
         }
-        if(SharedPrefManager.getInstance(this).getAddress()!=null){
+        if (SharedPrefManager.getInstance(this).getAddress() != null) {
             tvAddress.setText("Address: " + SharedPrefManager.getInstance(this).getAddress());
-        }else{
+        } else {
             tvAddress.setVisibility(View.GONE);
         }
-        if(SharedPrefManager.getInstance(this).getProject()!=null){
+        if (SharedPrefManager.getInstance(this).getProject() != null) {
             tvProject.setText("Project: " + SharedPrefManager.getInstance(this).getProject());
-        }else{
+        } else {
             tvProject.setVisibility(View.GONE);
         }
-        if(SharedPrefManager.getInstance(this).getSite()!=null){
+        if (SharedPrefManager.getInstance(this).getSite() != null) {
             tvSite.setText("Site: " + SharedPrefManager.getInstance(this).getSite());
-        }else{
+        } else {
             tvSite.setVisibility(View.GONE);
         }
-        if(SharedPrefManager.getInstance(this).getOperator()!=null){
+        if (SharedPrefManager.getInstance(this).getOperator() != null) {
             tvOperator.setText("Operator: " + SharedPrefManager.getInstance(this).getOperator());
-        }else{
+        } else {
             tvOperator.setVisibility(View.GONE);
         }
 
-        if(SharedPrefManager.getInstance(this).getSubCon()!=null){
+        if (SharedPrefManager.getInstance(this).getSubCon() != null) {
             tvSubcon.setText("SubCon: " + SharedPrefManager.getInstance(this).getSubCon());
-        }else{
+        } else {
             tvSubcon.setVisibility(View.GONE);
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         sdf.setTimeZone(TimeZone.getDefault());
         String currentDateandTime = sdf.format(new Date());
-        tvDateAndTime.setText("Date & Time : "+ currentDateandTime);
+        tvDateAndTime.setText("Date & Time : " + currentDateandTime);
     }
 
     public void showPopUp() {
@@ -466,5 +478,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(activity.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
         }
+    }
+
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+              }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.comsol.provider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, CAMERA_REQUEST);
+            }
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 }
