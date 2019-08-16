@@ -337,7 +337,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             imageView.setImageBitmap(photo);
             imageView.setDrawingCacheEnabled(true);
             showPopUp();
-
         }
     }
 
@@ -351,10 +350,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             Date now = new Date();
             android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
-            // image naming and path  to include sd card  appending name you choose for file
             String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".png";
-            // create bitmap screen capture
-            //View view = getWindow().getDecorView().getRootView();
+
             view.setDrawingCacheEnabled(true);
             Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
             view.setDrawingCacheEnabled(true);
@@ -373,9 +370,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void saveBitmapToGallery(String mCurrentPhotoPath) {
+    private void saveBitmapToGallery(String path) {
         HelperUtils helperUtils = new HelperUtils(this);
-        Bitmap bitmapCompressed = helperUtils.getCompressedBitmapOptimized(mCurrentPhotoPath);
+        Bitmap bitmapCompressed = helperUtils.getCompressedBitmapOptimized(path);
         if (bitmapCompressed != null) {
             String filePath = HelperUtils.getTodaysDate() + "_" + HelperUtils.getCurrentTime() + "_" + Math.random();
             String newPath = helperUtils.savePhoto(bitmapCompressed, SIGNATURE_PHOTOS_DIRECTORY_NAME, filePath);
@@ -483,16 +480,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
             File photoFile = null;
             try {
                 photoFile = createImageFile();
             } catch (IOException ex) {
-                // Error occurred while creating the File
               }
-            // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
                         "com.example.comsol.provider",
@@ -504,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private File createImageFile() throws IOException {
-        // Create an image file name
+        mCurrentPhotoPath ="";
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -514,7 +507,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 storageDir      /* directory */
         );
 
-        // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
         return image;
     }
