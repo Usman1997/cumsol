@@ -351,10 +351,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Date now = new Date();
             android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
             String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".png";
-
             view.setDrawingCacheEnabled(true);
             Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
-            view.setDrawingCacheEnabled(true);
+            view.setDrawingCacheEnabled(false);
             File imageFile = new File(mPath);
             FileOutputStream outputStream = new FileOutputStream(imageFile);
             int quality = 100;
@@ -363,7 +362,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             outputStream.close();
             Toast.makeText(this, "Successfully Saved", Toast.LENGTH_SHORT).show();
             saveBitmapToGallery(mPath);
-            // openScreenshot(imageFile);
         } catch (Throwable e) {
             // Several error may come out with file handling or DOM
             e.printStackTrace();
