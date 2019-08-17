@@ -259,6 +259,17 @@
         android:textColor="@color/white_color"
         android:visibility="visible"
         android:layout_marginBottom="10dp"/>
+    <Button
+        android:id="@+id/saveCameraBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/drawable_edit_text"
+        android:gravity="center"
+        android:text="Capture Picture"
+        android:textColor="@color/white_color"
+        android:visibility="gone"
+        android:layout_marginBottom="10dp"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

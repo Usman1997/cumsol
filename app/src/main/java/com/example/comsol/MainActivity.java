@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
     EditText project, operator, subcon, site;
-    Button openCameraBtn;
+    Button openCameraBtn,saveCameraBtn;
     FrameLayout frameView;
     private static final int CAMERA_REQUEST = 1888;
     private ImageView imageView;
@@ -122,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvAddress = (TextView) findViewById(R.id.tvAddress);
         imageView = (ImageView) findViewById(R.id.imageView);
         openCameraBtn = (Button) findViewById(R.id.openCameraBtn);
+        saveCameraBtn = (Button) findViewById(R.id.saveCameraBtn);
+        saveCameraBtn.setOnClickListener(this);
         openCameraBtn.setOnClickListener(this);
     }
 
@@ -294,6 +296,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     storeData();
                 }
                 break;
+
+            case R.id.saveCameraBtn:
+
+                break;
         }
     }
 
@@ -332,6 +338,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
             llform.setVisibility(View.GONE);
             llDataSet.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.VISIBLE);
+            frameView.setVisibility(View.VISIBLE);
             HelperUtils helperUtils = new HelperUtils(this);
             photo = helperUtils.getCompressedBitmapOptimized(mCurrentPhotoPath);
             imageView.setImageBitmap(photo);
@@ -354,6 +362,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             view.setDrawingCacheEnabled(true);
             Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
             view.setDrawingCacheEnabled(false);
+            view =null;
             File imageFile = new File(mPath);
             FileOutputStream outputStream = new FileOutputStream(imageFile);
             int quality = 100;
@@ -362,11 +371,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             outputStream.close();
             Toast.makeText(this, "Successfully Saved", Toast.LENGTH_SHORT).show();
             saveBitmapToGallery(mPath);
+
         } catch (Throwable e) {
             // Several error may come out with file handling or DOM
             e.printStackTrace();
         }
-    }
+      }
 
     private void saveBitmapToGallery(String path) {
         HelperUtils helperUtils = new HelperUtils(this);
@@ -376,6 +386,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String newPath = helperUtils.savePhoto(bitmapCompressed, SIGNATURE_PHOTOS_DIRECTORY_NAME, filePath);
             bitmapCompressed.recycle();
         }
+        llDataSet.setVisibility(View.GONE);
+        llform.setVisibility(View.VISIBLE);
+        imageView.setImageDrawable(null);
+        frameView.setVisibility(View.GONE);
+        this.recreate();
 
 
     }
